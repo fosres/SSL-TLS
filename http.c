@@ -109,6 +109,17 @@ int http_get(int connection,
             const char * proxy_password)
 {
     static char get_command[MAX_GET_COMMAND];
+    if ( proxy_host != NULL )
+    {
+        sprintf(get_command, "GET http://%s/%s HTTP/1.1\r\n", host, path );
+    
+    }
+
+    else
+    {
+        sprintf(get_command, "GET /%s HTTP/1.1\r\n", path);
+    }
+    
     sprintf(get_command,"GET /%s HTTP/1.1\r\n", path);
 
     if ( send(connection, get_command, strlen(get_command), 0) == -1)
@@ -122,6 +133,35 @@ int http_get(int connection,
     {
        return -1; 
 
+    }
+    
+    if ( proxy_user == NULL) 
+    {
+        int credentials_len = strlen(proxy_user) + strlen(proxy_password) + 1;
+        char * proxy_credentials = (char *)malloc(credentials_len);
+
+        char * auth_string = (char *)malloc( ( (credentials_len * 4) / 3 ) + 1 );
+        sprintf(proxy_credentials, "%s:%s",proxy_user, proxy_password);
+        
+        base64_encode(proxy_credentials, credentials_len, auth_string);
+        
+        sprintf(get_command, "Proxy-Authorization: BASIC %s\r\n",auth_string);
+        
+        if ( send(connection,get_command,strlen(get_command),0) == -1 )
+    {
+        free(proxy_credentials);
+
+        free(auth_string);
+
+        return -1;
+
+    }
+
+    free(proxy_credentials);
+
+    free(auth_string);
+    
+    
     }
     
     sprintf(get_command, "Connection: close\r\n\r\n");
