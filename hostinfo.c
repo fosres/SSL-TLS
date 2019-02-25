@@ -79,14 +79,13 @@ int main(int argc, char ** argv)
 
 	struct addrinfo ** res = NULL, *p = NULL; 
 
-	printf("IPv6 address: %s\n",argv[1]);
 
 	if ( argc != 2 )
 	{
 	
 		fprintf(stderr,"usage %s <domain name or application representation>\n",argv[0]);
 		
-		exit(0);
+		exit(1);
 	}
 	
 		
@@ -96,13 +95,15 @@ int main(int argc, char ** argv)
 
 	hints->ai_flags = AI_PASSIVE;
 
-	if ( (gstrerr = getaddrinfo(argv[1], "https", hints, res) ) != 0 )
+	if ( (gstrerr = getaddrinfo(argv[1], NULL, hints, res) ) != 0 )
 	{
 		fprintf( stderr, "getaddrinfo: %s\n", gai_strerror(gstrerr) );
 
+		exit(2);
+
 	}
 
-	printf("IP address for %s:\n\n",argv[1]);
+	printf("IP addresses for %s:\n\n",argv[1]);
 	
 	void * addr = NULL;
 
@@ -111,6 +112,7 @@ int main(int argc, char ** argv)
 	struct sockaddr_in * ipv4 = NULL;	
 	
 	struct sockaddr_in * ipv6 = NULL;	
+	
 	for ( p = *res; p != NULL; p = p->ai_next)
 	{
 
@@ -132,11 +134,17 @@ int main(int argc, char ** argv)
 			ipversion = "IPv6\0";
 
 		}
-	}
+		
 //inet_ntop converts network byte order from struct addrinfo * to a presentation format for the respective IP version
 
 		inet_ntop(p->ai_family, addr, ipstr, sizeof(ipstr) );
 		
 		printf(" %s: %s\n", ipversion, ipstr);
+	}
+	
+	freeaddrinfo(*res);	
+	
+	freeaddrinfo(hints);	
+	
 	return 0;
 }
