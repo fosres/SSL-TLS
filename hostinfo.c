@@ -147,7 +147,5 @@ int main(int argc, char ** argv)
 	
 	freeaddrinfo(res);	
 	
-	freeaddrinfo(&hints);	
-	
 	return 0;
 }
