@@ -75,7 +75,7 @@ int main(int argc, char ** argv)
 	
 	int gstrerr = 0;
 	
-	struct addrinfo * hints = (struct addrinfo *)calloc(2,sizeof(struct addrinfo));
+	struct addrinfo * hints = (struct addrinfo *)calloc(1,sizeof(struct addrinfo));
 
 	struct addrinfo ** res = NULL, *p = NULL; 
 
@@ -95,7 +95,7 @@ int main(int argc, char ** argv)
 
 	hints->ai_flags = AI_PASSIVE;
 
-	if ( (gstrerr = getaddrinfo(argv[1], NULL, hints, res) ) != 0 )
+	if ( (gstrerr = getaddrinfo(argv[1], "https", hints, res) ) != 0 )
 	{
 		fprintf( stderr, "getaddrinfo: %s\n", gai_strerror(gstrerr) );
 
