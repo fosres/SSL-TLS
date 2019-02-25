@@ -38,6 +38,7 @@ IPv4/6 website.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -75,9 +76,11 @@ int main(int argc, char ** argv)
 	
 	int gstrerr = 0;
 	
-	struct addrinfo * hints = (struct addrinfo *)calloc(1,sizeof(struct addrinfo));
+	static struct addrinfo hints;
 
-	struct addrinfo ** res = NULL, *p = NULL; 
+	memset(&hints,0,sizeof(hints));
+
+	struct addrinfo * res = NULL, *p = NULL; 
 
 
 	if ( argc != 2 )
@@ -89,13 +92,13 @@ int main(int argc, char ** argv)
 	}
 	
 		
-	hints->ai_family  = AF_UNSPEC; //getaddrinfo will correctly fill out information whether IPv4 or IPv6
+	hints.ai_family  = AF_UNSPEC; //getaddrinfo will correctly fill out information whether IPv4 or IPv6
 
-	hints->ai_socktype = SOCK_STREAM; //official connection-based protocol for TCP communication
+	hints.ai_socktype = SOCK_STREAM; //official connection-based protocol for TCP communication
 
-	hints->ai_flags = AI_PASSIVE;
+	hints.ai_flags = AI_PASSIVE;
 
-	if ( (gstrerr = getaddrinfo(argv[1], "https", hints, res) ) != 0 )
+	if ( (gstrerr = getaddrinfo(argv[1], "https", &hints, &res) ) != 0 )
 	{
 		fprintf( stderr, "getaddrinfo: %s\n", gai_strerror(gstrerr) );
 
@@ -113,7 +116,7 @@ int main(int argc, char ** argv)
 	
 	struct sockaddr_in * ipv6 = NULL;	
 	
-	for ( p = *res; p != NULL; p = p->ai_next)
+	for ( p = res; p != NULL; p = p->ai_next)
 	{
 
 		if ( p->ai_family == AF_INET)
@@ -142,9 +145,9 @@ int main(int argc, char ** argv)
 		printf(" %s: %s\n", ipversion, ipstr);
 	}
 	
-	freeaddrinfo(*res);	
+	freeaddrinfo(res);	
 	
-	freeaddrinfo(hints);	
+	freeaddrinfo(&hints);	
 	
 	return 0;
 }
