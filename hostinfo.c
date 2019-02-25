@@ -8,7 +8,7 @@ Any modified forms of this file must explicitly state that it was adapted from t
 #endif
 
 #if 0
-	Adapted from Beej's Network Programming showip.c file
+	Adapted from Beejs Network Programming showip.c file
 
 #endif
 
@@ -22,11 +22,11 @@ of input argv[1]
 
 and 
 
-it's hostname
+its hostname
 
 and
 
-it's servicename (portnumber)
+its servicename (portnumber)
 
 and
 
