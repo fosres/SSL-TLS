@@ -8,6 +8,11 @@ Any modified forms of this file must explicitly state that it was adapted from t
 #endif
 
 #if 0
+	Adapted from Beej's Network Programming showip.c file
+
+#endif
+
+#if 0
 
 Purpose: 
 
@@ -36,6 +41,8 @@ IPv4/6 website.
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 
 
@@ -63,18 +70,16 @@ application presentation
 
 int main(int argc, char ** argv)
 {
-	char ** p = NULL;
 	
-	static char ipv6[INET6_ADDRSTRLEN];
+	static char ipstr[INET6_ADDRSTRLEN];
 	
 	int gstrerr = 0;
-
-	static char * hostname[1024];
-
-	static char * servname[32]; 
 	
+	struct addrinfo * hints = (struct addrinfo *)calloc(2,sizeof(struct addrinfo));
 
-	printf("IPv6 address: %s\n",ipv6);
+	struct addrinfo ** res = NULL, *p = NULL; 
+
+	printf("IPv6 address: %s\n",argv[1]);
 
 	if ( argc != 2 )
 	{
@@ -84,6 +89,54 @@ int main(int argc, char ** argv)
 		exit(0);
 	}
 	
+		
+	hints->ai_family  = AF_UNSPEC; //getaddrinfo will correctly fill out information whether IPv4 or IPv6
 
+	hints->ai_socktype = SOCK_STREAM; //official connection-based protocol for TCP communication
+
+	hints->ai_flags = AI_PASSIVE;
+
+	if ( (gstrerr = getaddrinfo(argv[1], "https", hints, res) ) != 0 )
+	{
+		fprintf( stderr, "getaddrinfo: %s\n", gai_strerror(gstrerr) );
+
+	}
+
+	printf("IP address for %s:\n\n",argv[1]);
+	
+	void * addr = NULL;
+
+	char * ipversion = NULL;
+	
+	struct sockaddr_in * ipv4 = NULL;	
+	
+	struct sockaddr_in * ipv6 = NULL;	
+	for ( p = *res; p != NULL; p = p->ai_next)
+	{
+
+		if ( p->ai_family == AF_INET)
+		{
+			ipv4 = (struct sockaddr_in *)&(p->ai_addr);
+			
+			addr = (struct in_addr *)&(ipv4->sin_addr);
+
+			ipversion = "IPv4\0";
+		}	
+		
+		else
+		{
+			struct sockaddr_in6 * ipv6 = (struct sockaddr_in6 *)p->ai_addr;
+
+			addr = (struct in6_addr *)&(ipv6->sin6_addr);
+			
+			ipversion = "IPv6\0";
+
+		}
+	}
+//inet_ntop converts network byte order from struct addrinfo * to a presentation format for the respective IP version
+
+		inet_ntop(p->ai_family, addr, ipstr, sizeof(ipstr) );
+		
+		printf(" %s: %s\n", ipversion, ipstr);
 	return 0;
 }
