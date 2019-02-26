@@ -211,64 +211,95 @@ void display_result(int connection)
 
 }
 
-int parse_proxy_param(char * proxy_spec char ** proxy_host, int * proxy_port, char ** proxy_user, char **
+int parse_proxy_param(char * proxy_spec, char ** proxy_host, int * proxy_port, char ** proxy_user, char **
 proxy_password)
 {
-    char * login_sep = NULL, *colon_sep = NULL, *trailer_sep = NULL;
+    char * login_sep = NULL, * colon_sep = NULL, * trailer_sep = NULL, * username = NULL,
+	 
+    * password = NULL, * host = NULL, * port = NULL;
     
     #if 0
-        The user should start the proxy spec with "http". But, we are being nice if he or she did not.
+        
+    	The user should start the proxy spec with "http". 
+		
+	But, we are being nice if he or she did not.
+
     #endif
 
     if ( strncmp("http://",proxy_spec,7) == 0)
     {
         proxy_spec += 7;
     }
+
+//login_sep will later place a NUL byte at end of password string	
     
-    login_sep = strchr(proxy_spec,'@');
+	
+    username = proxy_spec; 
+	
+    host = (login_sep = strchr(proxy_spec,'@'))+1;
 
     if (login_sep != NULL)
     {
-        colon_sep = strchr(proxy_spec, ':');
-        if ((colon_sep == 0) || (colon_sep > login_sep ) )
+	    
+//colon_sep will later place a NUL byte at end of username string 
+	
+	password = (colon_sep = strchr(proxy_spec, ':'))+1;
+
+        if ((colon_sep == NULL) || (colon_sep > login_sep ) )
         {
             //Error - if username supplied, password must be supplied
-            fprintf(stderr,"Expected password in '%s'\n",proxy_spec);
+            fprintf(stderr,"%d: Expected password in '%s'\n",__LINE__,proxy_spec);
             
             return 0;
             
         }
 
-        *colon_sep = '\0';
+        
+	*colon_sep = '\0';
 
-        *proxy_user = proxy_spec;
+        *proxy_user = username;
 
         *login_sep = '\0';
 
-        *proxy_password = colon_sep + 1;
+        *proxy_password = password;
 
-        proxy_spec = login_sep + 1;
+//proxy_spec below will now point to beginning of proxy-host string
+
+        proxy_spec = host;
     }
 
 #if 0
-    If the user added a "/" on the end, just ignore it.
+    If the user added a "/" at the end of proxy host, just ignore it.
 #endif
+
+	   trailer_sep = strchr(proxy_spec,'/'); 
+    
+    
     if ( trailer_sep != NULL )
     {
         *trailer_sep = '\0';
     }
 
+    
     colon_sep = strchr(proxy_spec, ':');
 
     if ( colon_sep != NULL )
     {
         // non-standard proxy part
 
+//colon_sep now puts NUL byte at end of proxy-host
+    
         *colon_sep = '\0';
 
-        *proxy_host = proxy_spec;
+//the char * pointed to by proxy_host will now store
 
-        *proxy_port = atoi(colon_sep + 1);
+//the memory address of the beginning char in
+
+//proxy_host
+        
+	*proxy_host = proxy_spec;
+
+        *proxy_port = (int)strtol(colon_sep + 1);
 
         if ( *proxy_port == 0)
         {
@@ -294,13 +325,25 @@ proxy_password)
 
 Simple command line HTTP client.
 
+gethostbyname and gethostbyaddr are both OUTDATED, especially
+
+gethostbyname. 
+
+We are better off merely using getaddrinfo() instead.
+
+This also means the struct hostent is OUTDATED, please
+
+delete them and use struct addrinfo to be able to use
+
+getaddrinfo().
+
 #endif
 
 int main(int argc, char * argv[])
 {
     int client_connection = 0;
     
-    char * proxy_host = NULL, *proxy_user = NULL, *proxy_password = NULL;
+    char * proxy_host = NULL, * proxy_user = NULL, * proxy_password = NULL;
     
     int proxy_port = 0;
 
