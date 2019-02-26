@@ -16,6 +16,7 @@
 
     Protocol Connection
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -30,8 +31,14 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #endif
+#include "http.h"
+
 
 #define HTTP_PORT 80
+
+#define EXIT_SUCCESS 0
+
+#define EXIT_FAILURE 1
 
 #if 0
     The following will parse the URL to arrive
@@ -109,6 +116,7 @@ int http_get(int connection,
             const char * proxy_password)
 {
     static char get_command[MAX_GET_COMMAND];
+    
     if ( proxy_host != NULL )
     {
         sprintf(get_command, "GET http://%s/%s HTTP/1.1\r\n", host, path );
@@ -122,23 +130,32 @@ int http_get(int connection,
     
     sprintf(get_command,"GET /%s HTTP/1.1\r\n", path);
 
-    if ( send(connection, get_command, strlen(get_command), 0) == -1)
+    if ( send(connection, get_command, strlen(get_command)+1, 0) == -1)
     {
-        return -1;
+	    fprintf(stderr,"%d: ",__LINE__);
+
+	    perror("send()");
+
+	    exit(EXIT_FAILURE); 
     }
 
     sprintf(get_command, "Host: %s\r\n", host);
     
     if ( send(connection,get_command, strlen(get_command, 0) ) == -1 ) 
     {
-       return -1; 
 
+	    fprintf(stderr,"%d: ",__LINE__);
+
+	    perror("send()");
+
+	    exit(EXIT_FAILURE); 
     }
     
-    if ( proxy_user == NULL) 
+    if ( proxy_user != NULL) 
     {
         int credentials_len = strlen(proxy_user) + strlen(proxy_password) + 1;
-        char * proxy_credentials = (char *)malloc(credentials_len);
+        
+	char * proxy_credentials = (char *)malloc(credentials_len);
 
         char * auth_string = (char *)malloc( ( (credentials_len * 4) / 3 ) + 1 );
         sprintf(proxy_credentials, "%s:%s",proxy_user, proxy_password);
@@ -153,7 +170,7 @@ int http_get(int connection,
 
         free(auth_string);
 
-        return -1;
+	exit(EXIT_FAILURE); 
 
     }
 
@@ -181,7 +198,7 @@ void display_result(int connection)
 {
     int received = 0;
 
-    static hcar recv_buf[BUFFER_SIZE + 1];
+    static char recv_buf[BUFFER_SIZE + 1];
 
     while ( (received = recv(connection, recv_buf, BUFFER_SIZE, 0) ) > 0 )
     {
