@@ -280,8 +280,9 @@ proxy_password)
         *trailer_sep = '\0';
     }
 
+//port will later put a NUL byte at end of proxy-port string
     
-    colon_sep = strchr(proxy_spec, ':');
+    port = (colon_sep = strchr(proxy_spec, ':')) + 1;
 
     if ( colon_sep != NULL )
     {
@@ -297,9 +298,9 @@ proxy_password)
 
 //proxy_host
         
-	*proxy_host = proxy_spec;
+	*proxy_host = host;
 
-        *proxy_port = (int)strtol(colon_sep + 1);
+        *proxy_port = (int)strtol(port);
 
         if ( *proxy_port == 0)
         {
@@ -311,7 +312,7 @@ proxy_password)
         {
             *proxy_port = HTTP_PORT;
 
-            *proxy_host = proxy_spec;
+            *proxy_host = host;
         }
 
         return 1;
