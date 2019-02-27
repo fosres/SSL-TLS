@@ -54,21 +54,25 @@ static void build_success_response(int connection)
     //Technically, this should account for short writes
     if (send(connection, buf, strlen(buf), 0) < strlen(buf) )
     {
-        perror("Trying to respond");
+        fprinf(stderr,"%d: ",__LINE__); 
+	perror("Trying to respond");
+	exit(1);
     }
 
 }
 
 static void build_error_response(int connection, int error_code )
 {
-    char buf[255] = {0};
+    static char buf[255];
 
     sprintf(buf, "HTTP/1.1 %d Error Occured\r\n\r\n", error_code);
 
     //Technically, this should account for short writes
     if ( send(connection, buf, strlen(buf), 0 ) < strlen(buf) )
     {
-        perror("Trying to respond");
+        fprintf(stderr,"%d: ",__LINE__); 
+	perror("Trying to respond");
+	exit(1);
 
     }
 
@@ -96,14 +100,6 @@ static void process_http_request(int connection)
 
     }
 
-    #ifdef WIN32
-    if ( closesocket(connection) == -1 )
-    #else
-    if ( close(connection) == -1 )
-    #endif
-    {
-        perror("Unable to close connection");
-    }
 }
         
 
@@ -112,28 +108,21 @@ int main(int argc, char * argv[] )
 {
     int listen_sock = 0;
 
+    int connect_sock =  0;
+
     int on = 1;
 
-    struct sockaddr_in local_addr = {0};
+    static struct sockaddr_in local_addr;
     
-    struct sockaddr_in client_addr = {0};
+    static struct sockaddr_in client_addr;
 
     int client_addr_len = sizeof(client_addr);
 
-    #ifdef WIN32
-    WSADATA wsaData = {0};
-    
-    if ( WSAStartup(MAKEWORD(2,2),&wsaData) != NO_ERROR)
-    {
-        perror("Unable to initialize winsock");
-        exit(0);
-    }
-    #endif
-
     if ( ( listen_sock = socket(PF_INET, SOCK_STREAM, 0 ) ) == -1 )
     {
-        perror("Unable to create listening socket");
-        exit(0);
+       	fprintf(stderr,"%d: ",__LINE__); 
+	perror("Unable to create listening socket");
+        exit(1);
     }
 
     if ( setsockopt(listen_sock,
@@ -141,8 +130,9 @@ int main(int argc, char * argv[] )
                     SO_REUSEADDR,
                     &on, sizeof(on) ) == -1)
                     {
-                        perror("Setting socket option");
-                        exit(0);
+                       	fprintf(stderr,"%d: ",__LINE__); 
+			perror("Setting socket option");
+                        exit(1);
 
                     }
 
@@ -156,26 +146,32 @@ int main(int argc, char * argv[] )
     if ( bind(listen_sock,
             (struct sockaddr *) &local_addr, sizeof(local_addr) ) == -1 )
     {
-        perror("Unable to bind to local address");
-        exit(0);
+       	fprintf(stderr,"%d: ",__LINE__); 
+	perror("Unable to bind to local address");
+        exit(1);
 
     }
 
     if (listen(listen_sock, 5) == -1 )
     {
-        perror("Unable to set socket backlog");
-        exit(0);
+       	fprintf(stderr,"%d: ",__LINE__); 
+	perror("Unable to set socket backlog");
+        exit(1);
 
     }
 
-    while ( (connect_sock = accept(listn_sock, (struct sockaddr *) &client_addr, &client_addr_len) ) != -1 )
+    while ( (connect_sock = accept(listen_sock, (struct sockaddr *) &client_addr, &client_addr_len) ) != -1 )
     {
         //TODO: ideally, this would make a new thread process_http_request(connect_sock);
+	
+	process_http_request(connect_sock);
     }
 
     if (connect_sock == -1)
     {
-        perror("Unable to accept socket");
+       	fprintf(stderr,"%d: ",__LINE__); 
+	perror("Unable to accept socket");
+	exit(1);
     }
 
 

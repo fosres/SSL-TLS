@@ -22,15 +22,10 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
-#ifdef WIN32
-#include <winsock2.h>
-#include <windows.h>
-#else
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#endif
 #include "http.h"
 
 
@@ -125,10 +120,10 @@ int http_get(int connection,
 
     else
     {
-        sprintf(get_command, "GET /%s HTTP/1.1\r\n", path);
+        sprintf(get_command, "GET /%s HTTP/1.1\r\n\0", path);
     }
     
-    sprintf(get_command,"GET /%s HTTP/1.1\r\n", path);
+    sprintf(get_command,"GET /%s HTTP/1.1\r\n\0", path);
 
     if ( send(connection, get_command, strlen(get_command)+1, 0) == -1)
     {
@@ -139,9 +134,9 @@ int http_get(int connection,
 	    exit(EXIT_FAILURE); 
     }
 
-    sprintf(get_command, "Host: %s\r\n", host);
+    sprintf(get_command, "Host: %s\r\n\0", host);
     
-    if ( send(connection,get_command, strlen(get_command, 0) ) == -1 ) 
+    if ( send(connection,get_command, strlen(get_command), 0)  == -1 ) 
     {
 
 	    fprintf(stderr,"%d: ",__LINE__);
@@ -158,11 +153,12 @@ int http_get(int connection,
 	char * proxy_credentials = (char *)malloc(credentials_len);
 
         char * auth_string = (char *)malloc( ( (credentials_len * 4) / 3 ) + 1 );
-        sprintf(proxy_credentials, "%s:%s",proxy_user, proxy_password);
+        
+	sprintf(proxy_credentials, "%s:%s",proxy_user, proxy_password);
         
         base64_encode(proxy_credentials, credentials_len, auth_string);
         
-        sprintf(get_command, "Proxy-Authorization: BASIC %s\r\n",auth_string);
+        sprintf(get_command, "Proxy-Authorization: BASIC %s\r\n\0",auth_string);
         
         if ( send(connection,get_command,strlen(get_command),0) == -1 )
     {
@@ -300,7 +296,7 @@ proxy_password)
         
 	*proxy_host = host;
 
-        *proxy_port = (int)strtol(port);
+        *proxy_port = (int)strtol(port,NULL,10);
 
         if ( *proxy_port == 0)
         {
@@ -319,8 +315,8 @@ proxy_password)
 
     }
 
-    }
 }
+
 
 #if 0
 
@@ -352,16 +348,13 @@ int main(int argc, char * argv[])
 
     struct hostent * host_name = NULL;
 
-    struct sockaddr_in_host_address = {0};
+    static struct sockaddr_in host_address;
     
     int ind = 0;
-#ifdef WIN32
-    WSADATA wsaData = {0};
-#endif
     
     if ( argc < 2 )
     {
-        fprintf(stderr, "Usage: %s [-p http://[username:password@]proxy-host:proxy-port]\ <URL>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-p http://[username:password@]proxy-host:proxy-port]\\ <URL>\n", argv[0]);
         
         return 1;
     }    
@@ -410,16 +403,6 @@ server.
 
 #endif
 
-#ifdef WIN32
-    
-    if ( WSAStartup(MAKEWORD(2,2), &wsaData) != NO_ERROR )
-    {
-        fprintf(stderr, "Error, unable to initialize winsock.n");
-
-        return 2;
-    }
-
-#endif
 
     client_connection = socket(PF_INET, SOCK_STREAM, 0);
 
@@ -438,7 +421,7 @@ server.
         return 3;
     }
 
-    if ( proxy_host )
+    if ( proxy_host != NULL )
     {
         printf("Connecting to host '%s'\n", proxy_host);
         host_name = gethostbyname(proxy_host);
@@ -465,25 +448,12 @@ server.
 
     printf("Retrieving document: '%s'\n", path);
 
-    http_get(client_connection, path, host);
+    http_get(client_connection, path, host, proxy_host, proxy_user, proxy_password);
+    
     display_result(client_connection);
 
     printf("Shutting down.\n");
 
-    #ifdef WIN32
-
-    if (closesocket(client_connection ) == -1)
-    #else
-    if ( close(client_connection) == -1)
-    #endif
-    {
-        perror("Error closing client connection");
-        return 5;
-    }
-    
-    #ifdef WIN32
-    WSACleanup();
-    #endif
      
     
     return 0;
