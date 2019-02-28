@@ -19,8 +19,6 @@ int main(int argc, char ** argv)
 	
 	static struct addrinfo hints, *res = NULL, *p = NULL; 
 
-	static struct sockaddr_in6 * ip6 = NULL;	
-	
 	int sockd = 0;
 
 	static char msg[1024];
@@ -75,15 +73,24 @@ int main(int argc, char ** argv)
 
 	printf("Bytes sent: %d\n",sent_bytes);
 			
-
+#if 0
 	if ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) ) == -1 )
 	{
 		fprintf(stderr,"%d: ",__LINE__);
 		perror("recv()");
 		exit(EXIT_FAILURE);
 	}
+#endif
 
-	printf("Bytes received: %d\n%s",recv_bytes,msg);
+	printf("%s",recv_bytes,msg);
+
+	while ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) ) > 0 )
+	{
+		printf("%s",msg);
+		
+		memset(msg,0,sizeof(msg));	
+	}
+
 
 	close(sockd);
 		
