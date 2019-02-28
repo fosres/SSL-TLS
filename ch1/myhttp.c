@@ -88,7 +88,7 @@ int main(int argc, char ** argv)
 
 	printf("%s",recv_bytes,msg);
 
-	while ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) ) > 0 )
+	while ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) ) >= 0 )
 	{
 		printf("%s",msg);
 		
