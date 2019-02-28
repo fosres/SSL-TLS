@@ -23,7 +23,11 @@ int main(int argc, char ** argv)
 
 	static char msg[1024];
 
-	char const * test = "GET / HTTP/1.1\n\n\0";
+	static char test[1024];
+
+	sprintf(test,"GET / HTTP/1.1\n\n\0");
+
+	
 
 	char ipstr = "\0";
 
