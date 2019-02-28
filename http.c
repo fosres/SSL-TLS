@@ -404,7 +404,7 @@ server.
 #endif
 
 
-    client_connection = socket(PF_INET, SOCK_STREAM, 0);
+    client_connection = socket(AF_INET, SOCK_STREAM, 0);
 
     if ( client_connection == -1 )
     {
@@ -441,7 +441,10 @@ server.
     memcpy(&host_address.sin_addr, host_name->h_addr_list[0], sizeof(struct in_addr));
     if ( connect(client_connection, (struct sockaddr * ) & host_address, sizeof(host_address) ) == -1)
     {
-        perror("Unable to connect to host");
+       	fprintf(stderr,"%d: ",__LINE__);
+
+	perror("Unable to connect to host");
+
         return 4;
 
     }
@@ -454,7 +457,7 @@ server.
 
     printf("Shutting down.\n");
 
-     
+    close(client_connection);    
     
     return 0;
 
