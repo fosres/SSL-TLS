@@ -21,12 +21,14 @@ void get_params(char const * uri,char ** hostname,char ** pathname)
 
 	static char url[MAX_BUFFER_SIZE];
 
+	static char * path_slash = NULL;
+
 	strncat(url,uri,MAX_BUFFER_SIZE-strlen(url)-1);
 
 
-	if ( strstr(url,"http://") != NULL )
+	if ( strstr(url,"//") != NULL )
 	{ 
-		strncat(*hostname,&url[abs(strstr(url,"http://")-&url[0]) + 7],MAX_BUFFER_SIZE - strlen(*hostname)-1);
+		strncat(*hostname,&url[abs(strstr(url,"//")-&url[0]) + 2],MAX_BUFFER_SIZE - strlen(*hostname)-1);
 
 
 		
@@ -42,6 +44,7 @@ void get_params(char const * uri,char ** hostname,char ** pathname)
 
 	if (strstr(*hostname,"/") != NULL)	
 	{	
+		
 		strncat(*pathname,&url[abs( strstr(*hostname,"/")  - &url[0] ) + 1],MAX_BUFFER_SIZE-strlen(*pathname)-1);
 	}
 
@@ -51,11 +54,13 @@ void get_params(char const * uri,char ** hostname,char ** pathname)
 			
 	}
 
+// separating hostname from pathname
 	
-	if (strstr(*hostname,"/") != NULL)
+	if ( strstr(*hostname,"/") != NULL )
 	{
-		*hostname[abs(strstr(*hostname,"/") - *hostname)] = '\0'; 
+		*strstr(*hostname,"/") = '\0';
 	}
+
 }
 
 int main(int argc, char ** argv)
@@ -83,9 +88,11 @@ int main(int argc, char ** argv)
 
 	static char * path_p = &path[0];
 
-//	get_params(argv[1],&host_p,&path_p);
+	get_params(argv[1],&host_p,&path_p);
 
-	snprintf(test,TEST_LEN,"GET /%s HTTP/1.1\n\n\0",path);
+	printf("Host:%s\nPath:%s\n",host,path);
+
+	snprintf(test,TEST_LEN,"GET /%s HTTP/1.1\r\n\0",path);
 
 	int recv_bytes = 0, sent_bytes = 0, gstrerror = 0;
 
@@ -95,7 +102,7 @@ int main(int argc, char ** argv)
 
 	hints.ai_socktype = SOCK_STREAM;
 	
-	if ( (gstrerror = getaddrinfo(argv[1],"http",&hints,&res) ) != 0)
+	if ( (gstrerror = getaddrinfo(host,"http",&hints,&res) ) != 0)
 	{
 		fprintf(stderr,"%d: getaddrinfo(): %s\n",__LINE__,gai_strerror(gstrerror));
 		exit(EXIT_FAILURE);
@@ -130,21 +137,31 @@ int main(int argc, char ** argv)
 		
 		exit(EXIT_FAILURE);
 	}
+	
+	snprintf(test,TEST_LEN,"Host: %s\r\n\0",host);
 
-	printf("Bytes sent: %d\n",sent_bytes);
-			
-#if 0
-	if ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) ) == -1 )
+	if ( (sent_bytes = send(sockd,test,strlen(test),0)) == -1)
 	{
 		fprintf(stderr,"%d: ",__LINE__);
-		perror("recv()");
+
+		perror("send");
+		
 		exit(EXIT_FAILURE);
 	}
-#endif
+	
+	snprintf(test,TEST_LEN,"Connection: close\r\n\r\n\0");
 
+	if ( (sent_bytes = send(sockd,test,strlen(test),0)) == -1)
+	{
+		fprintf(stderr,"%d: ",__LINE__);
+
+		perror("send");
+		
+		exit(EXIT_FAILURE);
+	}
 	printf("%s",recv_bytes,msg);
 
-	while ( ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) )  >= 0 ) 
+	while ( ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) )  > 0 ) 
 		&& (msg[0] != '\0') )
 	{
 		printf("%s",msg);
@@ -156,6 +173,6 @@ int main(int argc, char ** argv)
 	close(sockd);
 		
 	freeaddrinfo(res);
-
+	
 	return 0;
 }

@@ -123,7 +123,6 @@ int http_get(int connection,
         sprintf(get_command, "GET /%s HTTP/1.1\r\n\0", path);
     }
     
-    sprintf(get_command,"GET /%s HTTP/1.1\r\n\0", path);
 
     if ( send(connection, get_command, strlen(get_command)+1, 0) == -1)
     {
@@ -133,7 +132,7 @@ int http_get(int connection,
 
 	    exit(EXIT_FAILURE); 
     }
-
+    
     sprintf(get_command, "Host: %s\r\n\0", host);
     
     if ( send(connection,get_command, strlen(get_command), 0)  == -1 ) 
@@ -183,7 +182,7 @@ int http_get(int connection,
     {
         return -1;
     }
-
+    
     return 0;
 
 }
