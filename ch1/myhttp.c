@@ -11,7 +11,11 @@
 
 #define MAX_BUFFER_SIZE 1024
 
-void get_params(char const * uri,static char ** hostname,static char ** pathname)
+#define GET_REQUEST_LEN 32
+
+#define TEST_LEN ( ( (1024)*(2) ) + (32) )
+
+void get_params(char const * uri,char ** hostname,char ** pathname)
 {
 	static char host[MAX_BUFFER_SIZE];
 
@@ -22,7 +26,7 @@ void get_params(char const * uri,static char ** hostname,static char ** pathname
 
 	if ( strstr(url,"http://") != NULL )
 	{ 
-		strncat(*hostname,&url[abs(strstr(url,"http://")-&uri[0]) + 7],MAX_BUFFER_SIZE - strlen(*hostname)-1);
+		strncat(*hostname,&url[abs(strstr(url,"http://")-&url[0]) + 7],MAX_BUFFER_SIZE - strlen(*hostname)-1);
 
 		strncat(*pathname,&url[abs( strstr(*hostname,"/")  - *hostname ) + 1],MAX_BUFFER_SIZE-strlen(*pathname)-1);
 
@@ -56,19 +60,19 @@ int main(int argc, char ** argv)
 
 	static char msg[MAX_BUFFER_SIZE];
 
-	static char test[MAX_BUFFER_SIZE];
+	static char test[TEST_LEN];
 
 	static char host[MAX_BUFFER_SIZE];
 
+	static char * host_pp = &host[0];
+
 	static char path[MAX_BUFFER_SIZE];
 
-	get_hostname(argv[1],host);
+	static char * path_pp = &path[0];
 
-	snprintf(test,MAX_BUFFER_SIZE,"GET http://%s/%s HTTP/1.1\n\n\0",&host,&path);
+	get_params(argv[1],&host_pp,&path_pp);
 
-	
-
-	char ipstr = "\0";
+	snprintf(test,1024*2+32,"GET http://%s/%s HTTP/1.1\n\n\0",host,path);
 
 	int recv_bytes = 0, sent_bytes = 0, gstrerror = 0;
 
