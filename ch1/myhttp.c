@@ -8,6 +8,39 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+
+#define MAX_BUFFER_SIZE 1024
+
+void get_params(char const * uri,static char ** hostname,static char ** pathname)
+{
+	static char host[MAX_BUFFER_SIZE];
+
+	static char url[MAX_BUFFER_SIZE];
+
+	strncat(url,uri,MAX_BUFFER_SIZE-strlen(url)-1);
+
+
+	if ( strstr(url,"http://") != NULL )
+	{ 
+		strncat(*hostname,&url[abs(strstr(url,"http://")-&uri[0]) + 7],MAX_BUFFER_SIZE - strlen(*hostname)-1);
+
+		strncat(*pathname,&url[abs( strstr(*hostname,"/")  - *hostname ) + 1],MAX_BUFFER_SIZE-strlen(*pathname)-1);
+
+		*hostname[abs(strstr(*hostname,"/") - *hostname)] = '\0'; 
+		
+	}
+
+	else
+	{
+		strncat(*hostname,&url[0],MAX_BUFFER_SIZE-strlen(*hostname)-1);
+
+		strncat(*pathname,&url[abs( strstr(*hostname,"/")  - *hostname ) + 1],MAX_BUFFER_SIZE-strlen(*pathname)-1);
+
+		*hostname[abs(strstr(*hostname,"/") - *hostname)] = '\0'; 
+	}
+
+}
+
 int main(int argc, char ** argv)
 {
 	if ( argc < 2)
@@ -21,11 +54,17 @@ int main(int argc, char ** argv)
 
 	int sockd = 0;
 
-	static char msg[1024];
+	static char msg[MAX_BUFFER_SIZE];
 
-	static char test[1024];
+	static char test[MAX_BUFFER_SIZE];
 
-	sprintf(test,"GET / HTTP/1.1\n\n\0");
+	static char host[MAX_BUFFER_SIZE];
+
+	static char path[MAX_BUFFER_SIZE];
+
+	get_hostname(argv[1],host);
+
+	snprintf(test,MAX_BUFFER_SIZE,"GET http://%s/%s HTTP/1.1\n\n\0",&host,&path);
 
 	
 
@@ -88,7 +127,8 @@ int main(int argc, char ** argv)
 
 	printf("%s",recv_bytes,msg);
 
-	while ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) ) >= 0 )
+	while ( ( ( recv_bytes = recv(sockd,msg,sizeof(msg),0) )  >= 0 ) 
+		&& (msg[0] != '\0') )
 	{
 		printf("%s",msg);
 		
