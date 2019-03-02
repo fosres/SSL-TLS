@@ -67,11 +67,7 @@ int main(int argc, char ** argv)
 {
 	if ( argc < 2)
 	{
-		fprintf(stderr,"%d: ",__LINE__);
-
-		fprintf(stderr,"Usage: %s: [-p http://[username:password@]\
-				proxy-host:proxy-port] <URL>\n",argv[0]);
-
+		fprintf(stderr,"%d: Missing URL",__LINE__);
 
 		exit(EXIT_FAILURE);
 	}	
@@ -80,69 +76,24 @@ int main(int argc, char ** argv)
 
 	int sockd = 0;
 
-	int proxy_port = 0;
-
 	static char msg[MAX_BUFFER_SIZE];
 
 	static char test[1024*2+32];
 
 	static char host[MAX_BUFFER_SIZE];
-	
+
 	static char * host_p = &host[0];
 
 	static char path[MAX_BUFFER_SIZE];
 
 	static char * path_p = &path[0];
 
-	static char proxy_host[MAX_BUFFER_SIZE];
+	get_params(argv[1],&host_p,&path_p);
 
-	static char * proxy_host_p = &proxy_host[0];
+	printf("Host:%s\nPath:%s\n",host,path);
 
-	static char proxy_port[MAX_BUFFER_SIZE];
+	snprintf(test,TEST_LEN,"GET /%s HTTP/1.1\r\n\0",path);
 
-	static char * proxy_port_p = &proxy_host[0];
-
-	static char proxy_passwd[MAX_BUFFER_SIZE];
-
-	static char * proxy_passwd_p = &proxy_passwd[0];
-
-	static char proxy_user[MAX_BUFFER_SIZE];
-
-	static char * proxy_user_p= &proxy_passwd[0];
-
-
-	if ( strstr(argv[1],"-p") != NULL )
-	{ 
-		if ( proxy_params(argv[2],&proxy_host_p,&proxy_port_p,&proxy_user_p,&proxy_passwd_p) == 0 )
-		{
-			fprintf(stderr,"%d: Error - malformed proxy parameter: %s.\n",__LINE__,argv[2]);
-
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	else
-	{	
-		if ( get_params(argv[1],&host_p,&path_p) == 0 )
-		{
-			fprintf(stderr,"%d: Error - malformed URL: %s.\n",__LINE__,argv[1]);
-
-			exit(EXIT_FAILURE);
-			
-		}
-	}
-
-	if ( proxy_host_p != NULL )
-	{
-		printf("Proxy-host:%s\nPath:%s\n",proxy_host,proxy_path);
-	}
-	
-	else
-	{
-		printf("Host:%s\nPath:%s\n",host,path);
-	}
-
-	
 	int recv_bytes = 0, sent_bytes = 0, gstrerror = 0;
 
 	memset(&hints,0,sizeof(hints));
@@ -150,28 +101,11 @@ int main(int argc, char ** argv)
 	hints.ai_family = AF_UNSPEC;
 
 	hints.ai_socktype = SOCK_STREAM;
-
-	if ( proxy_host != NULL )
-	{
-
-		if ( (gstrerror = getaddrinfo(proxy_host,"http",&hints,&res) ) != 0)
-		{
-			fprintf(stderr,"%d: getaddrinfo(): %s\n",__LINE__,gai_strerror(gstrerror));
-			exit(EXIT_FAILURE);
-
-		}
-
-	}
 	
-	else
-	{	
-
-		if ( (gstrerror = getaddrinfo(host,"http",&hints,&res) ) != 0)
-		{
-			fprintf(stderr,"%d: getaddrinfo(): %s\n",__LINE__,gai_strerror(gstrerror));
-			exit(EXIT_FAILURE);
-
-		}
+	if ( (gstrerror = getaddrinfo(host,"http",&hints,&res) ) != 0)
+	{
+		fprintf(stderr,"%d: getaddrinfo(): %s\n",__LINE__,gai_strerror(gstrerror));
+		exit(EXIT_FAILURE);
 
 	}
 
@@ -195,12 +129,6 @@ int main(int argc, char ** argv)
 
 	printf("Data Sent and Received\n");
 	
-
-// path remains the same regardless of whether requesting from a proxy server
-
-	snprintf(test,MAX_BUFFER_SIZE+GET_REQUEST_LEN+1,"GET /%s HTTP/1.1\r\n\0",path);
-
-
 	if ( (sent_bytes = send(sockd,test,strlen(test),0)) == -1)
 	{
 		fprintf(stderr,"%d: ",__LINE__);
