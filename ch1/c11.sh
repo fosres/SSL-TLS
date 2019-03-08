@@ -33,7 +33,7 @@ sed -i '/__errno_t_defined 1/a #endif\n\n#ifndef __rsize_t_defined' stdio.h
 
 sed -i '/__rsize_t_defined/a typedef size_t rsize_t;' stdio.h
 
-sed -i '/rsize_t;/a typedef #define __rsize_t_defined 1' stdio.h
+sed -i '/rsize_t;/a #define __rsize_t_defined 1' stdio.h
 
 sed -i '/__rsize_t_defined 1/a #endif\n\n' stdio.h
 
@@ -49,4 +49,24 @@ sed -i '/__STDDEF_H__/a #define __STDDEF_H__' stddef.h
 
 sed -i '/#define/a \n\n#ifndef __size_t_defined' stddef.h
 
-sed -i '/__size_t_defined/a typedef unsigned long int size_t' stddef.h
+sed -i '/__size_t_defined/a typedef unsigned long int size_t;' stddef.h
+
+sed -i '/typedef/a #define __size_t_defined 1' stddef.h
+
+sed -i '/size_t_defined 1/a #endif\n\n' stddef.h
+
+echo "#ifndef __rsize_t_defined" >> stddef.h
+
+sed -i '/__rsize_t_defined/a typedef size_t rsize_t;' stddef.h
+
+sed -i '/typedef size_t rsize_t;/a #define __rsize_t_defined 1' stddef.h
+
+sed -i '/__rsize_t_defined 1/a #endif\n\n#endif /* __STDDEF_H__ */' stddef.h
+
+sed -i '/SIG_ATOMIC_MAX/a \n\n#ifdef __RSIZE_MAX__' stdint.h
+
+sed -i '/__RSIZE_MAX__/a #define RSIZE_MAX (__RSIZE_MAX__)\n#else\n\n#define RSIZE_MAX ( (SIZE_MAX ) >> ( 1 ) )\n#endif\n\n' stdint.h
+
+
+
+
