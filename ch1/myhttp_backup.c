@@ -72,7 +72,11 @@ int main(int argc, char ** argv)
 		exit(EXIT_FAILURE);
 	}	
 	
-	static struct addrinfo hints, *res = NULL, *p = NULL; 
+	static struct addrinfo hints; static struct addrinfo *res = NULL; 
+	
+	static struct addrinfo *p = NULL; 
+
+	memset(&hints,0,sizeof(hints));
 
 	int sockd = 0;
 
@@ -91,7 +95,7 @@ int main(int argc, char ** argv)
 	get_params(argv[1],&host_p,&path_p);
 
 	printf("Host:%s\nPath:%s\n",host,path);
-
+	
 	snprintf(test,TEST_LEN,"GET /%s HTTP/1.1\r\n\0",path);
 
 	int recv_bytes = 0, sent_bytes = 0, gstrerror = 0;
