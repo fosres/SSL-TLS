@@ -1,51 +1,27 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+
+#define MAXSIZE 128
 int main(int argc, char ** argv)
 {
 
-#if 0	
-	errno_t test = 2111111;	
-
-	printf("%u\n",test);
-
-	rsize_t a = sizeof(test);
+	static char dst[MAXSIZE];	
 	
-	size_t max = SIZE_MAX;
+	if ( argc != 2 )
+	{
+		
+		fprintf(stderr,"%d: Error: Less than three arguments!\n"
+				
+				"Format: [./test.o] [src_string]"
+		       );
 
-	printf("%llu\n",max);
+		return 1;
 
-	printf("%llu\n",RSIZE_MAX);
-
-	test ||= 0;
+	}
 	
-	printf("%d\n",test);
-#endif
-	static char dst[128];
-
-	static char src[128];
-
-	src[0] = 'T';
-
-	src[1] = 'h';
-
-	src[2] = 'e';
-
-	src[3] = ' ';
-
-	src[4] = 'c';
-
-	src[5] = 'a';
-
-	src[6] = 'r';
-
-	src[7] = '\0';
-
-	errno_t result = strncat_s(dst,128*sizeof(char),src,128*sizeof(char)-strnlen_s(dst,128*sizeof(char))-1);
-	size_t a = strnlen_s(src,128);
+	errno_t result = strncat_s(dst,MAXSIZE,argv[1],MAXSIZE-strnlen_s(dst,MAXSIZE)-1);
 	
-	printf("Length of src string: %llu\n",a);
-
 	printf("Errno returned: %d\n",result);
 
 	printf("Dest String: %s\n",dst);
