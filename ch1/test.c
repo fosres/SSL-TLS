@@ -3,7 +3,6 @@
 #include <string.h>
 int main(void)
 {
-#if 0
 	errno_t test = 2111111;	
 
 	printf("%u\n",test);
@@ -16,6 +15,9 @@ int main(void)
 
 	printf("%llu\n",RSIZE_MAX);
 
+	test ||= 0;
+	
+	printf("%d\n",test);
+
 	return 0;
-#endif
 }
