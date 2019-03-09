@@ -9,17 +9,13 @@ errno_t strncat_s(char * restrict s1, rsize_t s1max, const char * restrict s2, r
 
 	rsize_t m = 0;
 
-	int A_STRING_IS_NULL = 0;
-
-	int S1MAX_NOT_IN_RANGE = 0;
+	int S2_STRING_IS_NULL = 0;
 
 	int N_NOT_IN_RANGE = 0;
 
 	int M_IS_ZERO = 0;
 
-	int S1MAX_IS_ZERO = 0;
-
-	int M_LONGER_THAN_STR2LEN = 0;
+	int M_SHORTER_THAN_STR2LEN = 0;
 
 #if 0
 
@@ -29,29 +25,66 @@ that stores the null char for s1.
 
 #endif
 
-	if ( ( m = ( s1max - strnlen( s1, s1max ) ) ) == 0 )
+	if ( ( m = ( s1max - strnlen_s( s1, s1max ) ) ) == 0 )
 	{
 	       M_IS_ZERO = 1;
 
-	}
-
-	if ( s1 == NULL || s2 == NULL )
-	{ 
-		A_STRING_IS_NULL = 1;		
+	       fprintf(stderr,"strncat_s: Error: M_IS_ZERO\n");
 
 	}
 
-	if ( s1max > RSIZE_MAX )
+	if ( s1max == 0 )
+	{
+
+		fprintf(stderr,"strncat_s: Error: %d: s1max is 0\n",__LINE__);
+
+		return 1;
+	}
+
+	if ( s1 == NULL  )
 	{ 
-		S1MAX_NOT_IN_RANGE = 1; 
+		fprintf(stderr,"strncat_s: Error: %d: Source string "
+				
+				"s1 is NULL!\n",
+				
+			__LINE__);
+
+		return 1;
+
+	}
+
+	if ( s2 == NULL )
+	{
+		S2_STRING_IS_NULL = 1;
+
+		fprintf(stderr,"strncat_s: Error: S2_STRING_IS_NULL\n");
+	}
 	
+	if ( s1max > RSIZE_MAX )
+	{
+	 
+		fprintf(stderr,"strncat_s: Error: %d: s1max is"
+
+				"larger than RSIZE_MAX",
+
+				__LINE__);
+
+		return 1;
 	}
 
 	if ( n > RSIZE_MAX )
-	{ N_NOT_IN_RANGE = 1; }
+	{ 
+		N_NOT_IN_RANGE = 1; 
+		
+		fprintf(stderr,"strncat_s: Error: N_NOT_IN_RANGE\n");	
+	}
 
-	if ( m > strnlen_s(s2,n) )
-	{ M_LONGER_THAN_STR2LEN = 1; }
+	if ( m < strnlen_s(s2,m) )
+	{ 
+		M_SHORTER_THAN_STR2LEN = 1; 
+		
+		fprintf(stderr,"strncat_s: Error: M_SHORTER_THAN_STR2LEN\n");	
+	}
 
 
 #if 0
@@ -64,24 +97,24 @@ which counts as a runtime-constraint violation.
 
 #endif
 	if ( 
-		A_STRING_IS_NULL || S1MAX_NOT_IN_RANGE || N_NOT_IN_RANGE 
+		S2_STRING_IS_NULL ||  N_NOT_IN_RANGE 
 			
-		|| M_IS_ZERO || S1MAX_IS_ZERO || N_NOT_IN_RANGE	
-
-		|| M_LONGER_THAN_STR2LEN
+		|| M_IS_ZERO || M_SHORTER_THAN_STR2LEN
 	   
 	   )
-	{ violation_present = 1; }
+	
+	{ 
+		violation_present = 1; 
+	}
 
 	if ( 	
-		violation_present 
-#if 0	
+		( violation_present == 1 ) 
+		
 		&& (s1 != NULL ) 
 
 		&& (s1max > 0) 
 		
 		&& (s1max <= RSIZE_MAX)
-#endif	   
 	   )
 	
 	{
@@ -89,6 +122,11 @@ which counts as a runtime-constraint violation.
 
 		return violation_present;
 
+	}
+
+	else if ( (violation_present == 1) )
+	{
+		return violation_present;
 	}
 
 	else // No runtime-constraint violations found
@@ -101,12 +139,67 @@ which counts as a runtime-constraint violation.
 	}	
 		
 
-
-
-
-
-
 }
+
+#if 0
+int main(void)
+{
+
+	static char dst[128]; 
+
+	static char src[128];
+
+	src[0] = 'T';
+
+	src[1] = 'h';
+
+	src[2] = 'e';
+
+	src[3] = 'c';
+
+	src[4] = 'a';
+
+	src[5] = 'r';
+
+	src[6] = '\0';
+
+
+	errno_t msg = 1;
+
+	if ( 	
+		
+		(
+			msg 
+			
+			= 
+			
+			strncat_s(dst,128,src,128-1) 
+		)
+
+		== 0	
+
+	   )
+	
+	{
+
+		printf("Destination String: %s\n",dst);		
+
+	}	
+
+	else
+	{
+		
+		fprintf(stderr,"Error: %d: "
+				
+				"Runtime-Constraint Violation!\n",
+				
+			__LINE__);
+
+	}
+
+	return 0;
+}
+#endif
 
 
 

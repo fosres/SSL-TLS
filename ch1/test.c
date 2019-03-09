@@ -3,6 +3,7 @@
 #include <stdint.h>
 int main(int argc, char ** argv)
 {
+
 #if 0	
 	errno_t test = 2111111;	
 
@@ -40,9 +41,14 @@ int main(int argc, char ** argv)
 
 	src[7] = '\0';
 
-	strncat_s(dst,sizeof(dst),src,sizeof(dst)-strnlen_s(dst,sizeof(dst))-1);
+	errno_t result = strncat_s(dst,128*sizeof(char),src,128*sizeof(char)-strnlen_s(dst,128*sizeof(char))-1);
+	size_t a = strnlen_s(src,128);
+	
+	printf("Length of src string: %llu\n",a);
 
-	printf("%s\n",dst);
+	printf("Errno returned: %d\n",result);
+
+	printf("Dest String: %s\n",dst);
 	
 	return 0;
 }
