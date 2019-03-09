@@ -67,6 +67,6 @@ sed -i '/SIG_ATOMIC_MAX/a \n\n#ifdef __RSIZE_MAX__' stdint.h
 
 sed -i '/__RSIZE_MAX__/a #define RSIZE_MAX (__RSIZE_MAX__)\n#else\n\n#define RSIZE_MAX ( (SIZE_MAX ) >> ( 1 ) )\n#endif\n\n' stdint.h
 
+sed -i '/strlen (c/a size_t strnlen_s (const char * s,size_t maxsize);' string.h
 
-
-
+sed -i '/strcat (c/a errno_t strncat_s (char * restrict s1, rsize_t s1max, const char * restrict s2, rsize_t n);' string.h

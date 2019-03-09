@@ -50,7 +50,7 @@ that stores the null char for s1.
 	if ( n > RSIZE_MAX )
 	{ N_NOT_IN_RANGE = 1; }
 
-	if ( m > strnlen_s(s2,m) )
+	if ( m > strnlen_s(s2,n) )
 	{ M_LONGER_THAN_STR2LEN = 1; }
 
 
@@ -95,7 +95,7 @@ which counts as a runtime-constraint violation.
 	{
 
 
-		strncat(s1,s2,s1max - strlen_s(s1,s1max) - 1);
+		strncat(s1,s2,s1max - strnlen_s(s1,s1max) - 1);
 
 		return violation_present;
 	}	
@@ -105,6 +105,13 @@ which counts as a runtime-constraint violation.
 
 
 
+
+}
+
+int main(void)
+{
+	
+	return 0;
 
 }
 
