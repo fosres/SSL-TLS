@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
-int main(void)
+#include <stdint.h>
+int main(int argc, char ** argv)
 {
 #if 0	
 	errno_t test = 2111111;	
@@ -24,7 +24,25 @@ int main(void)
 
 	static char src[128];
 
-	strncat_s(dst,sizeof(dest),src,sizeof(dst)/sizeof(dst[0])-strlen_s(dst,sizeof(dest)));
+	src[0] = 'T';
+
+	src[1] = 'h';
+
+	src[2] = 'e';
+
+	src[3] = ' ';
+
+	src[4] = 'c';
+
+	src[5] = 'a';
+
+	src[6] = 'r';
+
+	src[7] = '\0';
+
+	strncat_s(dst,sizeof(dst),src,sizeof(dst)-strnlen_s(dst,sizeof(dst))-1);
+
+	printf("%s\n",dst);
 	
 	return 0;
 }

@@ -108,11 +108,5 @@ which counts as a runtime-constraint violation.
 
 }
 
-int main(void)
-{
-	
-	return 0;
-
-}
 
 

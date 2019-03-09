@@ -18,7 +18,3 @@ size_t strnlen_s(const char * s,size_t maxsize)
 
 }
 
-int main(void)
-{
-	return 0;
-}
