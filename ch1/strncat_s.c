@@ -65,7 +65,7 @@ that stores the null char for s1.
 	 
 		fprintf(stderr,"strncat_s: Error: %d: s1max is"
 
-				"larger than RSIZE_MAX",
+				" larger than RSIZE_MAX\n",
 
 				__LINE__);
 
