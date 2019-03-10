@@ -15,7 +15,7 @@ errno_t strncat_s(char * restrict s1, rsize_t s1max, const char * restrict s2, r
 
 	int M_IS_ZERO = 0;
 
-	int M_SHORTER_THAN_STR2NLEN = 0;
+	int M_SHORTER_OR_EQUAL_TO_STR2NLEN = 0;
 
 #if 0
 
@@ -29,7 +29,7 @@ that stores the null char for s1.
 	{
 	       M_IS_ZERO = 1;
 
-	       fprintf(stderr,"strncat_s: Error: M_IS_ZERO\n");
+	       fprintf(stderr,"strncat_s: Warning: M_IS_ZERO\n");
 
 	}
 
@@ -57,7 +57,7 @@ that stores the null char for s1.
 	{
 		S2_STRING_IS_NULL = 1;
 
-		fprintf(stderr,"strncat_s: Error: S2_STRING_IS_NULL\n");
+		fprintf(stderr,"strncat_s: Warning: S2_STRING_IS_NULL\n");
 	}
 	
 	if ( s1max > RSIZE_MAX )
@@ -76,7 +76,7 @@ that stores the null char for s1.
 	{ 
 		N_NOT_IN_RANGE = 1; 
 		
-		fprintf(stderr,"strncat_s: Error: N_NOT_IN_RANGE\n");	
+		fprintf(stderr,"strncat_s: Warning: N_NOT_IN_RANGE\n");	
 	}
 
 #if 0
@@ -87,9 +87,9 @@ Bug found: Testcase r3 from C11 N1570 Draft for strncat_s fails
 
 	if ( ( m <= n ) && ( m <= strnlen_s(s2,n) ) )
 	{ 
-		M_SHORTER_THAN_STR2NLEN = 1; 
+		M_SHORTER_OR_EQUAL_TO_STR2NLEN = 1; 
 		
-		fprintf(stderr,"strncat_s: Error: M_SHORTER_THAN_STR2NLEN\n");	
+		fprintf(stderr,"strncat_s: Warning: M_SHORTER_OR_EQUAL_TO_STR2NLEN\n");	
 	}
 
 
@@ -105,7 +105,7 @@ which counts as a runtime-constraint violation.
 	if ( 
 		S2_STRING_IS_NULL ||  N_NOT_IN_RANGE 
 			
-		|| M_IS_ZERO || M_SHORTER_THAN_STR2NLEN
+		|| M_IS_ZERO || M_SHORTER_OR_EQUAL_TO_STR2NLEN
 	   
 	   )
 	
@@ -143,6 +143,11 @@ Bug found: Testcase r3 from C11 N1570 Draft for strncat_s fails
 
 
 		strncat(s1,s2,s1max - strnlen_s(s1,s1max) - 1);
+
+		if ( s1[strnlen_s(s1,s1max)] != '\0' )
+		{
+			s1[strnlen_s(s1,s1max)] = '\0';
+		}
 
 		return violation_present;
 	}	
