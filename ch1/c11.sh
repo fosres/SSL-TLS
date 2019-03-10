@@ -98,13 +98,19 @@ case "${unameOut}" in
 	*)		machine="UNKNOWN:${unameOut}"
 esac	
 
-#If Linux, then append to libc.a which is in /usr/lib/
+#If Linux or Darwin, then append to libc.a which is in /usr/lib/
 
-if [[ ${machine} == *"Linux"* ]]; then
+#If Cygwin, then append to libcygwin.a which is in /usr/lib
+
+if [[ ${machine} == *"Linux"* ]]
+then
+	ar -r /usr/lib/libc.a ${PREVIOUS}/${objects}
+elif [[ ${machine} == *"Cygwin"* ]]
+then
+	ar -r /usr/lib/libcygwin.a ${PREVIOUS}/${objects}
+elif [[ ${machine} == *"Mac"* ]]
+then
 	ar -r /usr/lib/libc.a ${PREVIOUS}/${objects}
 fi
-
-
-
 
 
