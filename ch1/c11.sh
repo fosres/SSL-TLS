@@ -70,3 +70,41 @@ sed -i '/__RSIZE_MAX__/a #define RSIZE_MAX (__RSIZE_MAX__)\n#else\n\n#define RSI
 sed -i '/strlen (c/a size_t strnlen_s (const char * s,size_t maxsize);' string.h
 
 sed -i '/strcat (c/a errno_t strncat_s (char * restrict s1, rsize_t s1max, const char * restrict s2, rsize_t n);' string.h
+
+cd ${PREVIOUS}
+
+git clone https://github.com/tanveerasalim/ISOC11.git
+
+:'
+
+If you wish to store all the .o objects files in a
+
+variable in BASH, you should do the following:
+
+objects=$( ls *.o )
+
+'
+
+objects=$( ls *.o )
+
+cd ${PREVIOUS}
+
+unameOut="$(uname -s)"
+
+case "${unameOut}" in
+	Linux*)		machine=Linux;;
+	Darwin*)	machine=Mac;;
+	CYGWIN*)	machine=Cygwin;;
+	*)		machine="UNKNOWN:${unameOut}"
+esac	
+
+#If Linux, then append to libc.a which is in /usr/lib/
+
+if [[ ${machine} == *"Linux"* ]]; then
+	ar -r /usr/lib/libc.a ${PREVIOUS}/${objects}
+fi
+
+
+
+
+
