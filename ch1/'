@@ -3,17 +3,18 @@ Copyright 2018-INFINITY Tanveer Salim.
 
 This program is distributed under a GNU GPL v2.0 License.
 
-This software is Free and Open Source Software.
+This software is Free and Open Source. You are free to
 
-You are free to view, modify, and copy as you please 
+view, modify, and copy as you please provided that you
 
-provided that you obey all copyright and license permissions.
+obey all copyright and license permissions.
 
 All programs that were derived from this program must be
 
 given the same exact license and contain these exact
 
 copyright permissions. 
+
 
 '
 
@@ -36,17 +37,6 @@ and all copies or programs that were derived
 from this must give proper credit to this author.
 
 This script adds support for C11 "_s" functions.
-
-
-WARNING: You are only meant to use this script
-
-exactly once.
-
-You should create a way for the computer to detect
-
-if this script has already been executed no matter
-
-how far back in the past it was.
 
 '
 
