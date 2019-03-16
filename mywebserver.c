@@ -3,11 +3,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#define DEFAULT_LINE_LEN 255
+#define DEFAULT_LINE_LEN 256
 
 #define HTTP_PORT 80
 
-char * read_line(int connection)
+char * read_line(int sockd)
 {
     static int line_len = DEFAULT_LINE_LEN;
     
@@ -21,12 +21,12 @@ char * read_line(int connection)
 
     if ( line != 0)
     {
-        line = malloc(line_len);
+        line = calloc(DEFAULT_LINE_LEN,sizeof(char));
     }
 
-    while ( ( size = recv(connection, &c, 1, 0) ) > 0 )
+    while ( ( size = recv(sockd, &c, 1, 0) ) > 0 )
     {
-        if ( ( c== '\n') && (line[pos-1] == '\r' ) )
+        if ( ( c == '\n') && (line[pos-1] == '\r' ) )
         {
             line[pos-1] = '\0';
 
@@ -46,7 +46,7 @@ char * read_line(int connection)
     return line;
 }
 
-static void build_success_response(int connection)
+static void build_success_response(int sockd)
 {
 
     char buf[255] = {0};
@@ -55,7 +55,7 @@ static void build_success_response(int connection)
     \r\n<html><head><title>Test Page</title></head><body>Nothing here</body></html>\\r\n");
 
     //Technically, this should account for short writes
-    if (send(connection, buf, strlen(buf), 0) < strlen(buf) )
+    if (send(sockd, buf, strlen(buf), 0) < strlen(buf) )
     {
         fprinf(stderr,"%d: ",__LINE__); 
 	perror("Trying to respond");
@@ -64,14 +64,14 @@ static void build_success_response(int connection)
 
 }
 
-static void build_error_response(int connection, int error_code )
+static void build_error_response(int sockd, int error_code )
 {
     static char buf[255];
 
     sprintf(buf, "HTTP/1.1 %d Error Occured\r\n\r\n", error_code);
 
     //Technically, this should account for short writes
-    if ( send(connection, buf, strlen(buf), 0 ) < strlen(buf) )
+    if ( send(sockd, buf, strlen(buf), 0 ) < strlen(buf) )
     {
         fprintf(stderr,"%d: ",__LINE__); 
 	perror("Trying to respond");
@@ -81,25 +81,25 @@ static void build_error_response(int connection, int error_code )
 
 }
 
-static void process_http_request(int connection)
+static void process_http_request(int sockd)
 {
-    char * request_line = read_line(connection);
+    char * request_line = read_line(sockd);
     
     if ( strncmp(request_line, "GET", 3) != 0 )
     {
         // Only supports "GET" request
 
-        build_error_response(connection, 501);
+        build_error_response(sockd, 501);
 
     }
 
     else
     {
         //Skip over all header lines, don't care 
-        while (strcmp(read_line(connection),"") != 0 )
+        while (strcmp(read_line(sockd),"") != 0 )
         ;
 
-        build_success_response(connection);
+        build_success_response(sockd);
 
     }
 
